@@ -1,3 +1,5 @@
+import { EmitterSubscription } from 'react-native';
+
 declare module "react-native-ble-peripheral" {
   function addService(UUID: string, primary: boolean): void;
   function addCharacteristicToService(
@@ -15,4 +17,14 @@ declare module "react-native-ble-peripheral" {
   function stop(): void;
   function setName(name: string): void;
   function isAdvertising(): Promise<boolean>;
+  function addListener(
+    event: "onReadRequest" | "onWriteRequest",
+    callback: (data: {
+      device: string;
+      serviceUUID: string;
+      characteristicUUID: string;
+      offset?: number;
+      value?: number[];
+    }) => void
+  ): EmitterSubscription;
 }

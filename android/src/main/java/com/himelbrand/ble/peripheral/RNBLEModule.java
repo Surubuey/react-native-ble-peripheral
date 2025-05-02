@@ -217,9 +217,54 @@ public class RNBLEModule extends ReactContextBaseJavaModule{
             mGattServer.notifyCharacteristicChanged(device, characteristic, indicate);
         }
     }
+
     @ReactMethod
     public void isAdvertising(Promise promise){
         promise.resolve(this.advertising);
     }
 
+    private void sendEvent(String eventName, @Nullable WritableMap params) {
+    ReactApplicationContext context = getReactApplicationContext();
+        if (context.hasActiveCatalystInstance()) {
+            context
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit(eventName, params);
+        }
+    }
+
+    @Override
+    public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
+        WritableMap params = Arguments.createMap();
+        params.putString("device", device.getAddress());
+        params.putString("serviceUUID", characteristic.getService().getUuid().toString());
+        params.putString("characteristicUUID", characteristic.getUuid().toString());
+        params.putInt("offset", offset);
+        sendEvent("onReadRequest", params);
+        // Respond with the current value
+        mGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, characteristic.getValue());
+        }
+
+        @Override
+        public void onCharacteristicWriteRequest(BluetoothDevice device, int requestId,
+                                                BluetoothGattCharacteristic characteristic,
+                                                boolean preparedWrite, boolean responseNeeded,
+                                                int offset, byte[] value) {
+        WritableMap params = Arguments.createMap();
+        params.putString("device", device.getAddress());
+        params.putString("serviceUUID", characteristic.getService().getUuid().toString());
+        params.putString("characteristicUUID", characteristic.getUuid().toString());
+        params.putArray("value", Arguments.fromArray(value));
+        sendEvent("onWriteRequest", params);
+        if (responseNeeded) {
+            mGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS, offset, value);
+        }
+    }
+
+    @Override
+    public Map<String, Object> getConstants() {
+        final Map<String, Object> constants = new HashMap<>();
+        constants.put("onReadRequest", "onReadRequest");
+        constants.put("onWriteRequest", "onWriteRequest");
+        return constants;
+    }
 }
