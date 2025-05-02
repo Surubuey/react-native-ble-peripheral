@@ -16,10 +16,14 @@ import android.content.Context;
 import android.os.ParcelUuid;
 import android.util.Log;
 
+import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
+import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
